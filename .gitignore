@@ -1,0 +1,26 @@
+# Python cache and build artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+
+# Environment and secret files
+.env
+.env.*
+*.env
+*.env.*
+.env.local
+
+# Local data dumps
+x_free_scraper/data/raw/
+x_free_scraper/data/clean/
+
+# OS files
+.DS_Store
+Thumbs.db
