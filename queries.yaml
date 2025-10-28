@@ -1,0 +1,30 @@
+spectacle_en: >-
+  ("RIZIN" OR ライジン) ("UFC") (opening ceremony OR walkout OR 入場 OR 開会式)
+  -is:retweet -is:quote lang:en
+
+rules_en: >-
+  ("RIZIN" OR ライジン) ("UFC") ("soccer kicks" OR stomps OR リング OR ケージ OR ring OR cage)
+  -is:retweet -is:quote lang:en
+
+access_en: >-
+  ("RIZIN" OR ライジン) ("UFC") ("English commentary" OR subtitles OR timezone OR PPV)
+  -is:retweet -is:quote lang:en
+
+spectacle_es: >-
+  ("RIZIN" OR ライジン) ("UFC") (ceremonia de apertura OR entrada)
+  -is:retweet -is:quote lang:es
+
+rules_pt: >-
+  ("RIZIN" OR ライジン) ("UFC") ("soccer kicks" OR pisões OR ringue OR jaula)
+  -is:retweet -is:quote lang:pt
+
+access_fr: >-
+  ("RIZIN" OR ライジン) ("UFC") (commentaire anglais OR sous-titres OR fuseau horaire)
+  -is:retweet -is:quote lang:fr
+
+rules_ru: >-
+  ("RIZIN" OR Райзин) ("UFC") (соккер-кик OR ринг OR клетка)
+  -is:retweet -is:quote lang:ru
+
+baseline_ja: >-
+  (ライジン OR RIZIN) (UFC) -is:retweet -is:quote lang:ja
