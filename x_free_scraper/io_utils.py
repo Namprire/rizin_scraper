@@ -122,7 +122,7 @@ def save_jsonl(records: List[Dict[str, Any]], path: Path) -> None:
 
 def _tokenize(text: str) -> List[str]:
     text = re.sub(r"https?://\S+|www\.\S+", " ", text)
-    text = re.sub(r"[@#]\S+", " ")
+    text = re.sub(r"[@#]\S+", " ", text)
     tokens = re.findall(r"[A-Za-zÀ-ÿ一-龥ぁ-ゔァ-ヴー0-9']+", text.lower())
     return tokens
 

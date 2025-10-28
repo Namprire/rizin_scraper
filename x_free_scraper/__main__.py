@@ -60,6 +60,14 @@ def cmd_reset(args: argparse.Namespace) -> int:
 
 def read_query(query_key: str) -> str:
     query_path = PROJECT_ROOT / "queries.yaml"
+    if not query_path.exists():
+        # Support repository layouts where queries.yaml lives beside the package
+        fallback = PROJECT_ROOT.parent / "queries.yaml"
+        if fallback.exists():
+            query_path = fallback
+    if not query_path.exists():
+        raise SystemExit("queries.yaml not found. Expected it in package or project root.")
+
     queries = read_yaml(query_path)
 
     if query_key not in queries:
