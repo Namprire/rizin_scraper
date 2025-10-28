@@ -8,7 +8,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from .client import XClient
+from .client import XClient, XClientError
 from .io_utils import (
     CLEAN_DIR,
     RAW_DIR,
@@ -89,7 +89,11 @@ def cmd_scout(args: argparse.Namespace) -> int:
     query = read_query(args.query_key)
     client = XClient()
     print(f"SCOUT '{args.query_key}'...")
-    response = client.counts_recent(query=query, granularity=args.granularity)
+    try:
+        response = client.counts_recent(query=query, granularity=args.granularity)
+    except XClientError as exc:
+        print(f"Error: {exc}")
+        return 4
     mark_counts_called()
 
     payload = {
@@ -128,7 +132,11 @@ def cmd_fetch(args: argparse.Namespace) -> int:
     query = read_query(args.query_key)
     client = XClient()
     print(f"FETCH '{args.query_key}' (max_results={expected})...")
-    response = client.search_recent(query=query, max_results=expected)
+    try:
+        response = client.search_recent(query=query, max_results=expected)
+    except XClientError as exc:
+        print(f"Error: {exc}")
+        return 4
     mark_search_called()
 
     timestamp_tag = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")

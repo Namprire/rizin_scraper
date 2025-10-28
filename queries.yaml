@@ -1,5 +1,6 @@
 spectacle_en: >-
-  ("RIZIN" OR ライジン) ("UFC") (opening ceremony OR walkout OR 入場 OR 開会式)
+  ("RIZIN" OR "Rizin") ("UFC")
+  ("opening ceremony" OR "opening show" OR "fighter entrance" OR entrance OR walkout OR ringwalk OR spectacle OR production)
   -is:retweet -is:quote lang:en
 
 rules_en: >-
