@@ -29,3 +29,9 @@ rules_ru: >-
 
 baseline_ja: >-
   (ライジン OR RIZIN) (UFC) -is:retweet -is:quote lang:ja
+
+rizin_en: >-
+  ("RIZIN" OR "Rizin" OR ライジン)
+  -from:RIZINTV_ -from:rizin_pr -from:rizin_english -from:rizin_landmark
+  -from:RIZIN_FF -from:RIZINTVJapan -from:Rizin_Studio
+  -is:retweet -is:reply lang:en

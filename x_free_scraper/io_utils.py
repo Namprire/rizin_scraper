@@ -160,27 +160,46 @@ def normalize_search_json(
         public_metrics = tweet.get("public_metrics", {}) or {}
         user_metrics = user.get("public_metrics", {}) or {}
 
+        tweet_id = tweet.get("id")
+        username = user.get("username")
+        display_name = user.get("name")
+
+        retweets = public_metrics.get("retweet_count") or 0
+        replies = public_metrics.get("reply_count") or 0
+        likes = public_metrics.get("like_count") or 0
+        quotes = public_metrics.get("quote_count") or 0
+        engagement_total = retweets + replies + likes + quotes
+
         row: Dict[str, Any] = {
-            "post_id": tweet.get("id"),
-            "created_at": tweet.get("created_at"),
-            "text": tweet.get("text"),
-            "lang": tweet.get("lang"),
+            "tweet_url": (
+                f"https://x.com/{username}/status/{tweet_id}"
+                if username and tweet_id
+                else (f"https://x.com/i/web/status/{tweet_id}" if tweet_id else None)
+            ),
+            "tweet_id": tweet_id,
+            "posted_at_utc": tweet.get("created_at"),
+            "tweet_language": tweet.get("lang"),
+            "tweet_text": tweet.get("text"),
             "author_id": author_id,
-            "username": user.get("username"),
+            "author_username": username,
+            "author_display_name": display_name,
             "author_followers": user_metrics.get("followers_count"),
-            "retweets": public_metrics.get("retweet_count"),
-            "replies": public_metrics.get("reply_count"),
-            "likes": public_metrics.get("like_count"),
-            "quotes": public_metrics.get("quote_count"),
+            "engagement_likes": likes,
+            "engagement_retweets": retweets,
+            "engagement_replies": replies,
+            "engagement_quotes": quotes,
+            "engagement_total": engagement_total,
             "conversation_id": tweet.get("conversation_id"),
             "query_key": query_key,
-            "fetched_at": fetched_at,
-            "source_platform": "x",
+            "fetched_at_utc": fetched_at,
         }
 
         if anonymize:
             row["author_id"] = sha_id(str(author_id or ""), salt)
-            row["username"] = None
+            row["author_username"] = None
+            row["author_display_name"] = None
+            if tweet_id:
+                row["tweet_url"] = f"https://x.com/i/web/status/{tweet_id}"
 
         rows.append(row)
 
@@ -189,6 +208,35 @@ def normalize_search_json(
 
 def write_clean_csv(rows: List[Dict[str, Any]], path: Path) -> None:
     df = pd.DataFrame(rows)
+    if not df.empty:
+        sort_col = "posted_at_utc" if "posted_at_utc" in df.columns else None
+        if sort_col:
+            df = df.sort_values(by=sort_col, ascending=False, na_position="last")
+
+    preferred_order = [
+        "tweet_url",
+        "tweet_id",
+        "posted_at_utc",
+        "tweet_language",
+        "tweet_text",
+        "author_username",
+        "author_display_name",
+        "author_id",
+        "author_followers",
+        "engagement_likes",
+        "engagement_retweets",
+        "engagement_replies",
+        "engagement_quotes",
+        "engagement_total",
+        "conversation_id",
+        "query_key",
+        "fetched_at_utc",
+    ]
+
+    available_columns = [col for col in preferred_order if col in df.columns]
+    remaining_columns = [col for col in df.columns if col not in available_columns]
+    df = df.reindex(columns=available_columns + remaining_columns)
+
     df.to_csv(path, index=False, encoding="utf-8")
 
 
@@ -205,10 +253,27 @@ def quick_summary(rows: List[Dict[str, Any]]) -> str:
         return "No records."
 
     df = pd.DataFrame(rows)
-    lang_dist = df["lang"].value_counts(dropna=False).to_dict() if "lang" in df else {}
-    avg_likes = _mean_or_zero(df.get("likes", pd.Series(dtype=float)))
-    avg_retweets = _mean_or_zero(df.get("retweets", pd.Series(dtype=float)))
-    texts = df.get("text", pd.Series(dtype=str)).fillna("").tolist()
+    lang_col = "tweet_language" if "tweet_language" in df else "lang"
+    lang_dist = df[lang_col].value_counts(dropna=False).to_dict() if lang_col in df else {}
+
+    likes_series = (
+        df.get("engagement_likes")
+        if "engagement_likes" in df
+        else df.get("likes", pd.Series(dtype=float))
+    )
+    retweets_series = (
+        df.get("engagement_retweets")
+        if "engagement_retweets" in df
+        else df.get("retweets", pd.Series(dtype=float))
+    )
+
+    avg_likes = _mean_or_zero(likes_series if likes_series is not None else pd.Series(dtype=float))
+    avg_retweets = _mean_or_zero(
+        retweets_series if retweets_series is not None else pd.Series(dtype=float)
+    )
+
+    text_col = "tweet_text" if "tweet_text" in df else "text"
+    texts = df.get(text_col, pd.Series(dtype=str)).fillna("").tolist()
     bigrams = top_bigrams(texts, k=5)
 
     return (
